@@ -26,14 +26,18 @@ class ViewController: UIViewController {
         let sql = "Insert Into Person (id, firstName, lastName, gender, age) Values ('1', '홍', '길동', '0', '32');"
         tvResult.text = sql
 
-        DBManager.SQLExcute(sql: sql)
+        // SQL 결과
+        let dicSQLResults:[String: Any] = DBManager.SQLExcute(sql: sql)
+        tvResult.text += "\n\(dicSQLResults)"
     }
 
 	@IBAction func onInsert2Click(_ sender: Any) {
         let sql = "Insert Into Person (id, firstName, lastName, gender, age) Values ('2', '임', '꺽정', '0', '30');"
         tvResult.text = sql
 
-        DBManager.SQLExcute(sql: sql)
+        // SQL 결과
+        let dicSQLResults:[String: Any] = DBManager.SQLExcute(sql: sql)
+        tvResult.text += "\n\(dicSQLResults)"
 	}
 	
     // Update문
@@ -41,7 +45,9 @@ class ViewController: UIViewController {
         let sql = "Update Person Set firstName='홍', lastName='길순', age='37' Where id='1';"
         tvResult.text = sql
 
-        DBManager.SQLExcute(sql: sql)
+        // SQL 결과
+        let dicSQLResults:[String: Any] = DBManager.SQLExcute(sql: sql)
+        tvResult.text += "\n\(dicSQLResults)"
 //        DBManager.SQLExcute(sql: "UPDATE Person SET id='1', firstName='김', lastName='삼돌', age='37', gender='0', age='40';")
     }
 
@@ -50,27 +56,29 @@ class ViewController: UIViewController {
         let sql = "Delete From Person Where id='2';"
         tvResult.text = sql
 
-        DBManager.SQLExcute(sql: sql)
+        // SQL 결과
+        let dicSQLResults:[String: Any] = DBManager.SQLExcute(sql: sql)
+        tvResult.text += "\n\(dicSQLResults)"
     }
     
     // Select문 전체 검색
     @IBAction func onSelect1Click(_ sender: Any) {
         let sql = "Select * From Person;"
         tvResult.text = sql
-
-        if let objects = DBManager.SQLExcute(sql: sql) {
-            tvResult.text += "\n\(objects)"
-        }
+        
+        // SQL 결과
+        let dicSQLResults:[String: Any] = DBManager.SQLExcute(sql: sql)
+        tvResult.text += "\n\(dicSQLResults)"
     }
     
     // Select문 조건 검색
     @IBAction func onSelect2Click(_ sender: Any) {
         let sql = "Select * From Person Where id='2';"
         tvResult.text = sql
-
-        if let objects = DBManager.SQLExcute(sql: sql) {
-            tvResult.text += "\n\(objects)"
-        }
+        
+        // SQL 결과
+        let dicSQLResults:[String: Any] = DBManager.SQLExcute(sql: sql)
+        tvResult.text += "\n\(dicSQLResults)"
     }
 }
 

@@ -81,56 +81,22 @@ class DBManager: NSObject {
     func selectSQL(type: Object.Type, condition: String) -> Results<Object>? {
         return database!.objects(type).filter(condition)
     }
-	
-	// 명령어 대문자로 변환
-	static func commandUppercased(sql: String) -> String {
-		var arrCommand = sql.components(separatedBy: " ")
-		for i in 0..<arrCommand.count {
-			let command = arrCommand[i].uppercased()
-			switch command {
-			case "INSERT",
-				 "INTO",
-                 "VALUES",
-				 "UPDATE",
-				 "SET",
-				 "WHERE",
-				 "DELETE",
-				 "FROM",
-				 "SELECT":
-				arrCommand[i] = command
-				break
-			default:
-				break
-			}
-
-			// INSERT INTO - VALUES
-			var arrSubCommand = arrCommand[i].components(separatedBy: "(")
-			if arrSubCommand.count == 2 {
-				if arrSubCommand[0].uppercased() == "VALUES" {
-					arrSubCommand[0] = "VALUES"
-				}
-				
-				arrCommand[i] = arrSubCommand.joined(separator:"(")
-			}
-		}
-		
-        let temp1 = arrCommand.joined(separator:" ")
-        let temp2 = temp1.replacingOccurrences(of: " (", with: "(")
-		
-		return temp2
-	}
     
     // SQL 실행하다.
-    @discardableResult  // <- Result of call to 'SQLExcute(sql:)' is unused
-    static func SQLExcute(sql: String) -> Results<Object>? {
-		
+    static func SQLExcute(sql: String) -> [String: Any] {
+        
+        // SQL 결과
+        var dicSQLResults:[String: Any] = [:]
+		dicSQLResults["RESULT_CODE"] = "0"
+        
 		let sqlTemp = DBManager.commandUppercased(sql: sql)
         print("\n명령어=\(sqlTemp)")
 		
         // SQL Parsing
         guard let dicTableData:[String: Any] = DBManager.SQLParsing(sql: sqlTemp) else {
-            print("잘못된 SQL명령어 입니다.")
-            return nil
+            dicSQLResults["RESULT_CODE"] = "1"
+            dicSQLResults["MESSAGE"] = "잘못된 SQL명령어 입니다."
+            return dicSQLResults
         }
 		
 		let command: String = dicTableData["COMMAND"] as! String
@@ -141,6 +107,10 @@ class DBManager: NSObject {
                 let dicFields:[String: String] = dicTableData["FIELDS"] as! [String : String]
                 Person.SQLExcute(command: command, condition: nil, dicFields: dicFields)
             }
+            else {
+                dicSQLResults["RESULT_CODE"] = "3"
+                dicSQLResults["MESSAGE"] = "해당 테이블이 존재하지 않습니다."
+            }
         }
         else if command == "UPDATE" {
             // 테이블 명에 따라서 추가하는 클래스 정보를 다르게 세팅해준다.
@@ -149,8 +119,18 @@ class DBManager: NSObject {
 			let dicFields:[String: String] = dicTableData["FIELDS"] as! [String : String]
 			
             // 검색후 업데이트해준다.
-            if tableName == "Person" && condition != nil {
-                Person.SQLExcute(command: command, condition: condition, dicFields: dicFields)
+            if tableName == "Person" {
+                if condition != nil {
+                    Person.SQLExcute(command: command, condition: condition, dicFields: dicFields)
+                }
+                else {
+                    dicSQLResults["RESULT_CODE"] = "2"
+                    dicSQLResults["MESSAGE"] = "검색 조건에 맞는 데이터가 존재하지 않습니다."
+                }
+            }
+            else {
+                dicSQLResults["RESULT_CODE"] = "3"
+                dicSQLResults["MESSAGE"] = "해당 테이블이 존재하지 않습니다."
             }
         }
         else if command == "DELETE" {
@@ -158,8 +138,18 @@ class DBManager: NSObject {
 			let tableName: String = dicTableData["TABLE_NAME"] as! String
 			let condition: String? = dicTableData["WHERE"] as? String
             // 검색후 삭제해준다.
-            if tableName == "Person" && condition != nil {
-                Person.SQLExcute(command: command, condition: condition, dicFields: nil)
+            if tableName == "Person" {
+                if condition != nil {
+                    Person.SQLExcute(command: command, condition: condition, dicFields: nil)
+                }
+                else {
+                    dicSQLResults["RESULT_CODE"] = "2"
+                    dicSQLResults["MESSAGE"] = "검색 조건에 맞는 데이터가 존재하지 않습니다."
+                }
+            }
+            else {
+                dicSQLResults["RESULT_CODE"] = "3"
+                dicSQLResults["MESSAGE"] = "해당 테이블이 존재하지 않습니다."
             }
         }
         else if command == "SELECT" {
@@ -168,11 +158,53 @@ class DBManager: NSObject {
 			let tableName: String = dicTableData["TABLE_NAME"] as! String
 			let condition: String? = dicTableData["WHERE"] as? String
             if tableName == "Person" {
-                return Person.SQLExcute(command: command, condition: condition, dicFields: nil)
+                dicSQLResults["RESULT_DATA"] = Person.SQLExcute(command: command, condition: condition, dicFields: nil)
+            }
+            else {
+                dicSQLResults["RESULT_CODE"] = "3"
+                dicSQLResults["MESSAGE"] = "해당 테이블이 존재하지 않습니다."
             }
         }
 
-        return nil
+        return dicSQLResults
+    }
+    
+    // 명령어 대문자로 변환
+    static func commandUppercased(sql: String) -> String {
+        var arrCommand = sql.components(separatedBy: " ")
+        for i in 0..<arrCommand.count {
+            let command = arrCommand[i].uppercased()
+            switch command {
+            case "INSERT",
+                 "INTO",
+                 "VALUES",
+                 "UPDATE",
+                 "SET",
+                 "WHERE",
+                 "DELETE",
+                 "FROM",
+                 "SELECT":
+                arrCommand[i] = command
+                break
+            default:
+                break
+            }
+            
+            // INSERT INTO - VALUES
+            var arrSubCommand = arrCommand[i].components(separatedBy: "(")
+            if arrSubCommand.count == 2 {
+                if arrSubCommand[0].uppercased() == "VALUES" {
+                    arrSubCommand[0] = "VALUES"
+                }
+                
+                arrCommand[i] = arrSubCommand.joined(separator:"(")
+            }
+        }
+        
+        let temp1 = arrCommand.joined(separator:" ")
+        let temp2 = temp1.replacingOccurrences(of: " (", with: "(")
+        
+        return temp2
     }
     
     // SQL Parsing
