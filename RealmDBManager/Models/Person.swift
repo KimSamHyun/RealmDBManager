@@ -9,7 +9,7 @@
 import UIKit
 import  RealmSwift
 
-class Person: Object {
+class Person: Object, NSCopying {
     @objc dynamic var id: Int = 0
     @objc dynamic var firstName: String = ""
     @objc dynamic var lastName: String = ""
@@ -30,20 +30,21 @@ class Person: Object {
         self.age = age
         self.gender = gender
     }
-
-	convenience init(_ object: Person) {
-		self.init()
-		
-		self.id = object.id
-		self.firstName = object.firstName
-		self.lastName = object.lastName
-		self.age = object.age
-		self.gender = object.gender
-	}
-
+    
+    // 클래스 복사
+    func copy(with zone: NSZone? = nil) -> Any {
+        let copy = Person(id: id,
+                          firstName: firstName,
+                          lastName: lastName,
+                          age: age,
+                          gender: gender)
+        
+        return copy
+    }
+    
     convenience init(_ dicFields: [String: String]) {
         self.init()
-
+        
         self.SQLParsing(dicFields)
     }
     
@@ -75,7 +76,7 @@ class Person: Object {
             self.setField(field: key, value: dicFields[key]!)
         }
     }
-
+    
     // SQL 실행하다.
     @discardableResult  // <- Result of call to 'SQLExcute(sql:)' is unused
     // command : 명령어
@@ -93,10 +94,11 @@ class Person: Object {
             // 조건식 검색해서 존재할 경우
             let objects = DBManager.sharedInstance.selectSQL(type: Person.self, condition: condition ?? "")?.first
             if objects != nil {
-                let newPerson: Person = Person(objects as! Person)
+                let newPerson: Person = objects?.copy() as! Person
+                
                 // 변경된 내용 수정
                 newPerson.SQLParsing(dicFields!)
-
+                
                 // isPrimaryKey는 프라이머리키 설정 했는지 유무
                 DBManager.sharedInstance.updateSQL(objs: newPerson, isPrimaryKey: true)
             }
@@ -113,12 +115,12 @@ class Person: Object {
             if condition == nil {
                 return DBManager.sharedInstance.selectSQL(type: Person.self)
             }
-            // 검색 조건이 있을 경우 조건 검색
+                // 검색 조건이 있을 경우 조건 검색
             else {
                 return DBManager.sharedInstance.selectSQL(type: Person.self, condition: condition ?? "")
             }
         }
-
+        
         return nil
     }
 }
