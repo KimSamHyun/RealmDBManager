@@ -81,4 +81,3 @@ class ViewController: UIViewController {
         tvResult.text += "\n\(dicSQLResults)"
     }
 }
-

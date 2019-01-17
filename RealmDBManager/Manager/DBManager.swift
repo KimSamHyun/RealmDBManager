@@ -32,7 +32,8 @@ class DBManager: NSObject {
         
         database = try! Realm()
     }
-    
+   
+    // MARK: - Direct SQL Processing
     // INSERT문
 	func insertSQL(objs: Object, isPrimaryKey: Bool = false) {
         try? database!.write ({
@@ -73,6 +74,7 @@ class DBManager: NSObject {
         })
     }
 
+    // MARK: - SQL Script Processing
     // SELECT문
     func selectSQL(type: Object.Type) -> Results<Object>? {
         return database!.objects(type)
@@ -168,7 +170,11 @@ class DBManager: NSObject {
 
         return dicSQLResults
     }
-    
+}
+
+
+extension DBManager {
+    // MARK: - SQL Script Parsing
     // 명령어 대문자로 변환
     static func commandUppercased(sql: String) -> String {
         var arrCommand = sql.components(separatedBy: " ")
@@ -227,27 +233,27 @@ class DBManager: NSObject {
                 print("INSERT 잘못된 명령어")
                 return nil
             }
-
+            
             // 테이블 명령어 정리
             var dicTableData:[String: Any] = [:]
-			dicTableData["COMMAND"] = command
-			dicTableData["TABLE_NAME"] = arrTable[0]
-			let arrField = arrTable[1].components(separatedBy: ",")
-			let arrValues = arrSQL[1].components(separatedBy: ",")
-			if arrField.count == 0 || arrField.count != arrValues.count {
-				return nil
-			}
-			
-			var dicFields:[String: String] = [:]
-			for i in 0..<arrField.count {
-				// 필드 값 세팅
-				let field = arrField[i]
-				let value = arrValues[i]
-				dicFields[field] = value
-			}
-			
-			dicTableData["FIELDS"] = dicFields
-			
+            dicTableData["COMMAND"] = command
+            dicTableData["TABLE_NAME"] = arrTable[0]
+            let arrField = arrTable[1].components(separatedBy: ",")
+            let arrValues = arrSQL[1].components(separatedBy: ",")
+            if arrField.count == 0 || arrField.count != arrValues.count {
+                return nil
+            }
+            
+            var dicFields:[String: String] = [:]
+            for i in 0..<arrField.count {
+                // 필드 값 세팅
+                let field = arrField[i]
+                let value = arrValues[i]
+                dicFields[field] = value
+            }
+            
+            dicTableData["FIELDS"] = dicFields
+            
             return dicTableData
         }
         else if command == "UPDATE" {
@@ -268,27 +274,27 @@ class DBManager: NSObject {
             
             // 테이블 명령어 정리
             var dicTableData:[String: Any] = [:]
-			dicTableData["COMMAND"] = command
-			dicTableData["TABLE_NAME"] = arrSQL[0]
+            dicTableData["COMMAND"] = command
+            dicTableData["TABLE_NAME"] = arrSQL[0]
             
             let arrCommand = arrSQL[1].components(separatedBy: " WHERE ")
             if arrCommand.count != 2 {
                 print("INSERT 잘못된 명령어")
                 return nil
             }
-			
-			let arrDatas = arrCommand[0].components(separatedBy: ",")
-			var dicFields:[String: String] = [:]
-			for data in arrDatas {
-				// 필드 값 세팅
-				let arrItem = data.components(separatedBy: "=")
-				let field = arrItem[0]
-				let value = arrItem[1]
-				dicFields[field] = value
-			}
-			
+            
+            let arrDatas = arrCommand[0].components(separatedBy: ",")
+            var dicFields:[String: String] = [:]
+            for data in arrDatas {
+                // 필드 값 세팅
+                let arrItem = data.components(separatedBy: "=")
+                let field = arrItem[0]
+                let value = arrItem[1]
+                dicFields[field] = value
+            }
+            
             dicTableData["FIELDS"] = dicFields
-			dicTableData["WHERE"] = arrCommand[1]
+            dicTableData["WHERE"] = arrCommand[1]
             
             return dicTableData
         }
@@ -297,18 +303,18 @@ class DBManager: NSObject {
             let temp2 = temp1.replacingOccurrences(of: "'|\\)|;", with: "",options: .regularExpression)
             let temp3 = temp2.replacingOccurrences(of: ", ", with: ",")
             let temp4 = temp3.replacingOccurrences(of: " ,", with: ",")
-
+            
             let arrSQL = temp4.components(separatedBy: " WHERE ")
             
             // 테이블 명령어 정리
             var dicTableData:[String: Any] = [:]
-			dicTableData["COMMAND"] = command
-			dicTableData["TABLE_NAME"] = arrSQL[0]
+            dicTableData["COMMAND"] = command
+            dicTableData["TABLE_NAME"] = arrSQL[0]
             // WHERE
             if arrSQL.count == 2 {
-				dicTableData["WHERE"] = arrSQL[1]
+                dicTableData["WHERE"] = arrSQL[1]
             }
-
+            
             return dicTableData
         }
         else if command == "SELECT" {
@@ -320,17 +326,17 @@ class DBManager: NSObject {
             let arrSQL = temp4.components(separatedBy: " FROM ")
             // 테이블 명령어 정리
             var dicTableData:[String: Any] = [:]
-			dicTableData["COMMAND"] = command
-			dicTableData["SELECT"] = arrSQL[0]
+            dicTableData["COMMAND"] = command
+            dicTableData["SELECT"] = arrSQL[0]
             
             let arrCommand = arrSQL[1].components(separatedBy: " WHERE ")
-			dicTableData["TABLE_NAME"] = arrCommand[0]
+            dicTableData["TABLE_NAME"] = arrCommand[0]
             
             // WHERE
             if arrCommand.count == 2 {
-				dicTableData["WHERE"] = arrCommand[1]
+                dicTableData["WHERE"] = arrCommand[1]
             }
-
+            
             return dicTableData
         }
         else {
