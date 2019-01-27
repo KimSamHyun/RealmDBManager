@@ -42,7 +42,7 @@ class ViewController: UIViewController {
 	
     // Update문
     @IBAction func onUpdateClick(_ sender: Any) {
-        let sql = "Update Person Set firstName='홍', lastName='길순', age='37' Where id='1';"
+        let sql = "Update Person Set firstName='홍', lastName='길순', age='37' Where id=1;"
         tvResult.text = sql
 
         // SQL 결과
@@ -53,7 +53,7 @@ class ViewController: UIViewController {
 
     // Delete문 조건 삭제
     @IBAction func onDelete2Click(_ sender: Any) {
-        let sql = "Delete From Person Where id='2';"
+        let sql = "Delete From Person Where id=2;"
         tvResult.text = sql
 
         // SQL 결과
@@ -73,7 +73,7 @@ class ViewController: UIViewController {
     
     // Select문 조건 검색
     @IBAction func onSelect2Click(_ sender: Any) {
-        let sql = "Select * From Person Where id='2';"
+        let sql = "Select * From Person Where id=2;"
         tvResult.text = sql
         
         // SQL 결과

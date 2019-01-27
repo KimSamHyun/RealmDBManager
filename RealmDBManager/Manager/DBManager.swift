@@ -217,8 +217,16 @@ extension DBManager {
     static func SQLParsing(sql: String) -> [String: Any]? {
         // 앞에 6글자만 잘라서 대문자로 변환
         let command = sql.prefix(6).uppercased()
+		let sql = sql.replacingOccurrences(of: ";", with: "")
+		let arrCommand = sql.components(separatedBy: " WHERE ")
+		let strCommand: String = arrCommand.first!
+		var strWhere: String = ""
+		if arrCommand.count >= 2 {
+			strWhere = arrCommand[1]
+		}
+		
         if command == "INSERT" {
-            let temp1 = sql.mid(12)
+            let temp1 = strCommand.mid(12)
             let temp2 = temp1.replacingOccurrences(of: "'|\\)|;", with: "",options: .regularExpression)
             let temp3 = temp2.replacingOccurrences(of: ", ", with: ",")
             let temp4 = temp3.replacingOccurrences(of: " ,", with: ",")
@@ -257,12 +265,12 @@ extension DBManager {
             return dicTableData
         }
         else if command == "UPDATE" {
-            if sql.contains("WHERE") == false {
+            if strWhere == "" {
                 print("UPDATE 잘못된 명령어")
                 return nil
             }
             
-            let temp1 = sql.mid(7)
+            let temp1 = strCommand.mid(7)
             let temp2 = temp1.replacingOccurrences(of: "'|\\)|;", with: "",options: .regularExpression)
             let temp3 = temp2.replacingOccurrences(of: ", ", with: ",")
             let temp4 = temp3.replacingOccurrences(of: " ,", with: ",")
@@ -277,13 +285,7 @@ extension DBManager {
             dicTableData["COMMAND"] = command
             dicTableData["TABLE_NAME"] = arrSQL[0]
             
-            let arrCommand = arrSQL[1].components(separatedBy: " WHERE ")
-            if arrCommand.count != 2 {
-                print("INSERT 잘못된 명령어")
-                return nil
-            }
-            
-            let arrDatas = arrCommand[0].components(separatedBy: ",")
+            let arrDatas = arrSQL[1].components(separatedBy: ",")
             var dicFields:[String: String] = [:]
             for data in arrDatas {
                 // 필드 값 세팅
@@ -294,31 +296,29 @@ extension DBManager {
             }
             
             dicTableData["FIELDS"] = dicFields
-            dicTableData["WHERE"] = arrCommand[1]
+            dicTableData["WHERE"] = strWhere
             
             return dicTableData
         }
         else if command == "DELETE" {
-            let temp1 = sql.mid(12)
+            let temp1 = strCommand.mid(12)
             let temp2 = temp1.replacingOccurrences(of: "'|\\)|;", with: "",options: .regularExpression)
             let temp3 = temp2.replacingOccurrences(of: ", ", with: ",")
             let temp4 = temp3.replacingOccurrences(of: " ,", with: ",")
             
-            let arrSQL = temp4.components(separatedBy: " WHERE ")
-            
             // 테이블 명령어 정리
             var dicTableData:[String: Any] = [:]
             dicTableData["COMMAND"] = command
-            dicTableData["TABLE_NAME"] = arrSQL[0]
+            dicTableData["TABLE_NAME"] = temp4
             // WHERE
-            if arrSQL.count == 2 {
-                dicTableData["WHERE"] = arrSQL[1]
+            if strWhere != "" {
+                dicTableData["WHERE"] = strWhere
             }
             
             return dicTableData
         }
         else if command == "SELECT" {
-            let temp1 = sql.mid(7)
+            let temp1 = strCommand.mid(7)
             let temp2 = temp1.replacingOccurrences(of: "'|\\)|;", with: "",options: .regularExpression)
             let temp3 = temp2.replacingOccurrences(of: ", ", with: ",")
             let temp4 = temp3.replacingOccurrences(of: " ,", with: ",")
@@ -329,12 +329,11 @@ extension DBManager {
             dicTableData["COMMAND"] = command
             dicTableData["SELECT"] = arrSQL[0]
             
-            let arrCommand = arrSQL[1].components(separatedBy: " WHERE ")
-            dicTableData["TABLE_NAME"] = arrCommand[0]
+            dicTableData["TABLE_NAME"] = arrSQL[1]
             
             // WHERE
-            if arrCommand.count == 2 {
-                dicTableData["WHERE"] = arrCommand[1]
+            if strWhere != "" {
+                dicTableData["WHERE"] = strWhere
             }
             
             return dicTableData
