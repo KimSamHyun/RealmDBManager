@@ -101,6 +101,20 @@ class DBManager: NSObject {
             return dicSQLResults
         }
 		
+        // 테이블 명에 따라서 추가하는 클래스 정보를 다르게 세팅해준다.
+        let tableName: String = dicTableData["TABLE_NAME"] as! String
+        if tableName == "Person" {
+            let arrResult: Results<Object>? = Person.SQLExcute(dicTableData: dicTableData)
+            if arrResult != nil {
+                dicSQLResults["RESULT_DATA"] = arrResult
+            }
+        }
+        else {
+            dicSQLResults["RESULT_CODE"] = "3"
+            dicSQLResults["MESSAGE"] = "해당 테이블이 존재하지 않습니다."
+        }
+        
+/*
 		let command: String = dicTableData["COMMAND"] as! String
         if command == "INSERT" {
             // 테이블 명에 따라서 추가하는 클래스 정보를 다르게 세팅해준다.
@@ -167,7 +181,7 @@ class DBManager: NSObject {
                 dicSQLResults["MESSAGE"] = "해당 테이블이 존재하지 않습니다."
             }
         }
-
+*/
         return dicSQLResults
     }
 }
