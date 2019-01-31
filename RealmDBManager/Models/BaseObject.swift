@@ -11,6 +11,11 @@ import  RealmSwift
 
 class BaseObject: Object {
     
+    // 프라이머리키 설정했나?
+    class func isPrimaryKey() -> Bool {
+        return false
+    }
+    
     class func createObject(_ dicFields: [String: String]) -> BaseObject {
         let this = self.init()
         
@@ -21,14 +26,6 @@ class BaseObject: Object {
         let this = self.init()
         
         return this
-    }
-    
-    // SQL 실행하다.
-    // command : 명령어
-    // condition : 조건식
-    // dicFields : 필드명 + 필드값
-    class func SQLExcuteRun(command: String, condition: String?, dicFields: [String: String]?) -> (String, Results<Object>?) {
-        return ("0", nil)
     }
     
     // SQL 실행하다.
@@ -43,7 +40,7 @@ class BaseObject: Object {
 
             let newItem = createObject(dicFields)
             // isPrimaryKey는 프라이머리키 설정 했는지 유무
-            DBManager.sharedInstance.insertSQL(objs: newItem, isPrimaryKey: true)
+            DBManager.sharedInstance.insertSQL(objs: newItem, isPrimaryKey: self.isPrimaryKey())
         }
         else if command == "UPDATE" {
             // 테이블 명에 따라서 추가하는 클래스 정보를 다르게 세팅해준다.
@@ -57,7 +54,7 @@ class BaseObject: Object {
                     let newObject = copyObject(object: objects!, dicFields: dicFields)
                     
                     // isPrimaryKey는 프라이머리키 설정 했는지 유무
-                    DBManager.sharedInstance.updateSQL(objs: newObject, isPrimaryKey: true)
+                    DBManager.sharedInstance.updateSQL(objs: newObject, isPrimaryKey:  self.isPrimaryKey())
                 }
                 else {
                     RESULT_CODE = "2"

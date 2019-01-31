@@ -31,6 +31,12 @@ class Person: BaseObject {
         self.gender = gender
     }
     
+    // 프라이머리키 설정했나?
+    override class func isPrimaryKey() -> Bool {
+        return (primaryKey() != nil)
+    }
+    
+    // 오브젝트 생성
     override class func createObject(_ dicFields: [String: String]) -> Person {
         let this = self.init()
         
@@ -39,6 +45,7 @@ class Person: BaseObject {
         return this
     }
     
+    // 오브젝트 복사후 필드값 세팅
     override class func copyObject(object: Object, dicFields: [String: String]) -> Person {
         let newObject: Person = object.copy() as! Person
         newObject.SQLParsing(dicFields)
