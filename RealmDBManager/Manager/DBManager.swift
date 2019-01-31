@@ -88,8 +88,8 @@ class DBManager: NSObject {
     static func SQLExcute(sql: String) -> [String: Any] {
         
         // SQL 결과
+        var RESULT_CODE = "0"
         var dicSQLResults:[String: Any] = [:]
-		dicSQLResults["RESULT_CODE"] = "0"
         
 		let sqlTemp = DBManager.commandUppercased(sql: sql)
         print("\n명령어=\(sqlTemp)")
@@ -104,84 +104,26 @@ class DBManager: NSObject {
         // 테이블 명에 따라서 추가하는 클래스 정보를 다르게 세팅해준다.
         let tableName: String = dicTableData["TABLE_NAME"] as! String
         if tableName == "Person" {
-            let arrResult: Results<Object>? = Person.SQLExcute(dicTableData: dicTableData)
-            if arrResult != nil {
-                dicSQLResults["RESULT_DATA"] = arrResult
-            }
+            let result: (RESULT_CODE: String, RESULT_DATA: Results<Object>?) = Person.SQLExcute(dicTableData: dicTableData)
+            RESULT_CODE = result.RESULT_CODE
+
+            if result.RESULT_DATA != nil {
+                dicSQLResults["RESULT_DATA"] = result.RESULT_DATA
+            }            
         }
         else {
-            dicSQLResults["RESULT_CODE"] = "3"
-            dicSQLResults["MESSAGE"] = "해당 테이블이 존재하지 않습니다."
+            RESULT_CODE = "3"
         }
         
-/*
-		let command: String = dicTableData["COMMAND"] as! String
-        if command == "INSERT" {
-            // 테이블 명에 따라서 추가하는 클래스 정보를 다르게 세팅해준다.
-			let tableName: String = dicTableData["TABLE_NAME"] as! String
-            if tableName == "Person" {
-                let dicFields:[String: String] = dicTableData["FIELDS"] as! [String : String]
-                Person.SQLExcute(command: command, condition: nil, dicFields: dicFields)
-            }
-            else {
-                dicSQLResults["RESULT_CODE"] = "3"
-                dicSQLResults["MESSAGE"] = "해당 테이블이 존재하지 않습니다."
-            }
+        // 결과 코드 저장
+        dicSQLResults["RESULT_CODE"] = RESULT_CODE
+        if RESULT_CODE == "2" {
+            dicSQLResults["MESSAGE"] = "검색 조건에 맞는 데이터가 존재하지 않습니다."
         }
-        else if command == "UPDATE" {
-            // 테이블 명에 따라서 추가하는 클래스 정보를 다르게 세팅해준다.
-			let tableName: String = dicTableData["TABLE_NAME"] as! String
-			let condition: String? = dicTableData["WHERE"] as? String
-			let dicFields:[String: String] = dicTableData["FIELDS"] as! [String : String]
-			
-            // 검색후 업데이트해준다.
-            if tableName == "Person" {
-                if condition != nil {
-                    Person.SQLExcute(command: command, condition: condition, dicFields: dicFields)
-                }
-                else {
-                    dicSQLResults["RESULT_CODE"] = "2"
-                    dicSQLResults["MESSAGE"] = "검색 조건에 맞는 데이터가 존재하지 않습니다."
-                }
-            }
-            else {
-                dicSQLResults["RESULT_CODE"] = "3"
-                dicSQLResults["MESSAGE"] = "해당 테이블이 존재하지 않습니다."
-            }
+        else if RESULT_CODE == "3" {
+            dicSQLResults["MESSAGE"] = "해당 테이블이 존재하지 않습니다."
         }
-        else if command == "DELETE" {
-            // 테이블 명에 따라서 추가하는 클래스 정보를 다르게 세팅해준다.
-			let tableName: String = dicTableData["TABLE_NAME"] as! String
-			let condition: String? = dicTableData["WHERE"] as? String
-            // 검색후 삭제해준다.
-            if tableName == "Person" {
-                if condition != nil {
-                    Person.SQLExcute(command: command, condition: condition, dicFields: nil)
-                }
-                else {
-                    dicSQLResults["RESULT_CODE"] = "2"
-                    dicSQLResults["MESSAGE"] = "검색 조건에 맞는 데이터가 존재하지 않습니다."
-                }
-            }
-            else {
-                dicSQLResults["RESULT_CODE"] = "3"
-                dicSQLResults["MESSAGE"] = "해당 테이블이 존재하지 않습니다."
-            }
-        }
-        else if command == "SELECT" {
 
-            // 테이블 명에 따라서 추가하는 클래스 정보를 다르게 세팅해준다.
-			let tableName: String = dicTableData["TABLE_NAME"] as! String
-			let condition: String? = dicTableData["WHERE"] as? String
-            if tableName == "Person" {
-                dicSQLResults["RESULT_DATA"] = Person.SQLExcute(command: command, condition: condition, dicFields: nil)
-            }
-            else {
-                dicSQLResults["RESULT_CODE"] = "3"
-                dicSQLResults["MESSAGE"] = "해당 테이블이 존재하지 않습니다."
-            }
-        }
-*/
         return dicSQLResults
     }
 }
